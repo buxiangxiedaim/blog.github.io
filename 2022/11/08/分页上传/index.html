@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>分页上传 | Blog</title>
+  <meta name="description" content="功能目的：1.对文件进行切片上传，使得每个接口响应时间缩短；2.控制请求并发量，避免请求过多导致页面崩溃；3.当部分请求失败，将失败的部分重新上传。 一.切片上传：1.使用FileReader接口提供的readAsArrayBuffer()读取file中的内容；2.使用SparkMD5存放读取出的ArrayBuffer对象；3.使用文件file对象的slice()方法进行切片。 123456789">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分页上传">
+<meta property="og:url" content="https://kaisailu-with-ice.gitee.io/blog/2022/11/08/%E5%88%86%E9%A1%B5%E4%B8%8A%E4%BC%A0/index.html">
+<meta property="og:site_name" content="开塞露加冰的博客">
+<meta property="og:description" content="功能目的：1.对文件进行切片上传，使得每个接口响应时间缩短；2.控制请求并发量，避免请求过多导致页面崩溃；3.当部分请求失败，将失败的部分重新上传。 一.切片上传：1.使用FileReader接口提供的readAsArrayBuffer()读取file中的内容；2.使用SparkMD5存放读取出的ArrayBuffer对象；3.使用文件file对象的slice()方法进行切片。 123456789">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-11-08T06:34:00.384Z">
+<meta property="article:modified_time" content="2022-11-08T08:17:56.038Z">
+<meta property="article:author" content="张尹">
+<meta property="article:tag" content="文件上传">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://kaisailu-with-ice.gitee.io/blog/2022/11/08/%E5%88%86%E9%A1%B5%E4%B8%8A%E4%BC%A0/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="开塞露加冰的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/blog/css/style.css">
+
+  
+  
+  
+  
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1.4.0/dist/gitalk.min.css">
+  
+<meta name="generator" content="Hexo 6.3.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/buxiangxiedaim" target="_blank">
+          <img class="img-circle img-rotate" src="/blog/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">开塞露加冰</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Web Developer &amp; Designer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Wuhan, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/blog/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/blog/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/buxiangxiedaim" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://www.weibo.com/u/3204295635" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/blog/categories/React-%E6%96%87%E7%AB%A0%E5%88%86%E7%B1%BB/">React - 文章分类</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/blog/categories/xxx-%E6%96%87%E7%AB%A0%E5%88%86%E7%B1%BB/">xxx - 文章分类</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/blog/categories/%E5%9F%BA%E7%A1%80%E4%B8%9A%E5%8A%A1-%E6%96%87%E7%AB%A0%E5%88%86%E7%B1%BB/">基础业务 - 文章分类</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/blog/tags/less/" rel="tag">less</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/blog/tags/sss/" rel="tag">sss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/blog/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/" rel="tag">文件上传</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/blog/tags/less/" style="font-size: 13px;">less</a> <a href="/blog/tags/sss/" style="font-size: 13px;">sss</a> <a href="/blog/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/" style="font-size: 13px;">文件上传</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/blog/archives/2022/11/">十一月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/blog/archives/2022/10/">十月 2022</a><span class="archive-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/blog/2022/11/11/readme/" class="title">(no title)</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2022-11-11T01:28:38.828Z" itemprop="datePublished">2022-11-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/blog/categories/%E5%9F%BA%E7%A1%80%E4%B8%9A%E5%8A%A1-%E6%96%87%E7%AB%A0%E5%88%86%E7%B1%BB/">基础业务 - 文章分类</a>
+              </p>
+              <p class="item-title">
+                <a href="/blog/2022/11/08/%E5%88%86%E9%A1%B5%E4%B8%8A%E4%BC%A0/" class="title">分页上传</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2022-11-08T06:34:00.384Z" itemprop="datePublished">2022-11-08</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/blog/categories/xxx-%E6%96%87%E7%AB%A0%E5%88%86%E7%B1%BB/">xxx - 文章分类</a>
+              </p>
+              <p class="item-title">
+                <a href="/blog/2022/10/21/hello-world/" class="title">Hello World</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2022-10-21T03:43:02.633Z" itemprop="datePublished">2022-10-21</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/blog/categories/React-%E6%96%87%E7%AB%A0%E5%88%86%E7%B1%BB/">React - 文章分类</a>
+              </p>
+              <p class="item-title">
+                <a href="/blog/2022/10/21/first-blog/" class="title">React使用less</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2022-10-21T03:43:02.631Z" itemprop="datePublished">2022-10-21</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-分页上传" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      分页上传
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/blog/2022/11/08/%E5%88%86%E9%A1%B5%E4%B8%8A%E4%BC%A0/" class="article-date">
+	  <time datetime="2022-11-08T06:34:00.384Z" itemprop="datePublished">2022-11-08</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/blog/categories/%E5%9F%BA%E7%A1%80%E4%B8%9A%E5%8A%A1-%E6%96%87%E7%AB%A0%E5%88%86%E7%B1%BB/">基础业务 - 文章分类</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/blog/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/" rel="tag">文件上传</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/blog/2022/11/08/%E5%88%86%E9%A1%B5%E4%B8%8A%E4%BC%A0/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.1k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 5(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h3 id="功能目的："><a href="#功能目的：" class="headerlink" title="功能目的："></a>功能目的：</h3><p>1.对文件进行切片上传，使得每个接口响应时间缩短；<br>2.控制请求并发量，避免请求过多导致页面崩溃；<br>3.当部分请求失败，将失败的部分重新上传。</p>
+<h4 id="一-切片上传："><a href="#一-切片上传：" class="headerlink" title="一.切片上传："></a>一.切片上传：</h4><p>1.使用FileReader接口提供的readAsArrayBuffer()读取file中的内容；2.使用SparkMD5存放读取出的ArrayBuffer对象；3.使用文件file对象的slice()方法进行切片。</p>
+<figure class="highlight javascript"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="title class_">React</span> <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="title class_">SparkMD5</span> <span class="keyword">from</span> <span class="string">'spark-md5'</span>;</span><br><span class="line"><span class="keyword">import</span> axios <span class="keyword">from</span> <span class="string">'axios'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title function_">Home</span> = (<span class="params"></span>) =&gt; {</span><br><span class="line">  axios.<span class="property">defaults</span>.<span class="property">baseURL</span> = <span class="string">'http://20.46.4.225:8080/study/common'</span>  <span class="comment">// 请求基准地址</span></span><br><span class="line">  <span class="keyword">const</span> <span class="variable constant_">CHUNK_SIZE</span> = <span class="number">1024</span> * <span class="number">10</span>; <span class="comment">//10KB</span></span><br><span class="line">  <span class="keyword">const</span> fileChunkList = []  <span class="comment">//存放文件切片</span></span><br><span class="line">  <span class="keyword">let</span> file = {}   <span class="comment">//文件</span></span><br><span class="line">  <span class="keyword">let</span> hash = <span class="string">""</span>   <span class="comment">//文件hash</span></span><br><span class="line">  </span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">change</span> = e =&gt; {</span><br><span class="line">    file = e.<span class="property">target</span>.<span class="property">files</span>[<span class="number">0</span>]</span><br><span class="line">  }</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">upload</span> = (<span class="params"></span>) =&gt; {</span><br><span class="line">    <span class="comment">// 1.计算文件hash值</span></span><br><span class="line">    <span class="title function_">calculateFileHash</span>(file)</span><br><span class="line">    <span class="comment">// 2.将文件名、hash、文件大小调用接口</span></span><br><span class="line">    .<span class="title function_">then</span>(<span class="keyword">async</span> res =&gt; {</span><br><span class="line">      hash = res</span><br><span class="line">      <span class="keyword">const</span> params = {</span><br><span class="line">        <span class="attr">filename</span>: file.<span class="property">name</span>,</span><br><span class="line">        <span class="attr">hash</span>: res,</span><br><span class="line">        <span class="attr">length</span>: file.<span class="property">size</span>,</span><br><span class="line">      };</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">axios</span>({</span><br><span class="line">        <span class="attr">method</span>: <span class="string">'post'</span>,</span><br><span class="line">        <span class="attr">url</span>: <span class="string">'/chunk/info'</span>,</span><br><span class="line">        <span class="attr">data</span>: params</span><br><span class="line">      })</span><br><span class="line">    })</span><br><span class="line">    .<span class="title function_">then</span>(<span class="keyword">async</span> res =&gt; {</span><br><span class="line">      <span class="comment">// 3.将文件切片</span></span><br><span class="line">      <span class="title function_">fileChunk</span>(file)</span><br><span class="line">      <span class="comment">// 4.将切片后的文件遍历上传</span></span><br><span class="line">      <span class="keyword">const</span> uploadList = fileChunkList.<span class="title function_">map</span>( <span class="function"><span class="params">v</span> =&gt;</span> {</span><br><span class="line">        <span class="keyword">const</span> formData = <span class="keyword">new</span> <span class="title class_">FormData</span>();</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'chunkCount'</span>, fileChunkList.<span class="property">length</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'chunkIndex'</span>, v.<span class="property">chunkIndex</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'chunkSize'</span>, v.<span class="property">chunkSize</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'fileHash'</span>, hash);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'path'</span>, res.<span class="property">path</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'file'</span>, v.<span class="property">chunk</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'everySize'</span>, <span class="variable constant_">CHUNK_SIZE</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="title function_">axios</span>({</span><br><span class="line">          <span class="attr">method</span>: <span class="string">'post'</span>,</span><br><span class="line">          <span class="attr">url</span>: <span class="string">'/chunk/upload'</span>,</span><br><span class="line">          <span class="attr">data</span>: formData,</span><br><span class="line">          <span class="attr">headers</span>: {</span><br><span class="line">            <span class="string">'Content-Type'</span>: <span class="string">'multipart/form-data'</span></span><br><span class="line">          }</span><br><span class="line">        })</span><br><span class="line">      })</span><br><span class="line">      <span class="keyword">await</span> <span class="title class_">Promise</span>.<span class="title function_">all</span>(uploadList)</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">'已完成'</span>);</span><br><span class="line"></span><br><span class="line">    }) </span><br><span class="line">  };</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">calculateFileHash</span> = (<span class="params">file</span>) =&gt; {</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> {</span><br><span class="line">      <span class="keyword">const</span> fileReader = <span class="keyword">new</span> <span class="title class_">FileReader</span>();</span><br><span class="line">      <span class="keyword">const</span> spark = <span class="keyword">new</span> <span class="title class_">SparkMD5</span>.<span class="title class_">ArrayBuffer</span>();</span><br><span class="line"></span><br><span class="line">      fileReader.<span class="title function_">readAsArrayBuffer</span>(file);</span><br><span class="line"></span><br><span class="line">      fileReader.<span class="property">onload</span> = <span class="function">(<span class="params">e</span>) =&gt;</span> {</span><br><span class="line">        spark.<span class="title function_">append</span>(e.<span class="property">target</span>.<span class="property">result</span>);</span><br><span class="line">        <span class="title function_">resolve</span>(spark.<span class="title function_">end</span>());</span><br><span class="line">      };</span><br><span class="line">    });</span><br><span class="line">  };</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> <span class="title function_">fileChunk</span> = (<span class="params">file</span>) =&gt; {</span><br><span class="line">    <span class="keyword">let</span> cur = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">let</span> index = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (cur &lt; file.<span class="property">size</span>) {</span><br><span class="line">      fileChunkList.<span class="title function_">push</span>({</span><br><span class="line">        <span class="attr">chunkIndex</span>: index,</span><br><span class="line">        <span class="attr">chunk</span>: file.<span class="title function_">slice</span>(cur, cur + <span class="variable constant_">CHUNK_SIZE</span>),</span><br><span class="line">        <span class="attr">chunkSize</span>: file.<span class="title function_">slice</span>(cur, cur + <span class="variable constant_">CHUNK_SIZE</span>).<span class="property">size</span></span><br><span class="line">      })</span><br><span class="line">      cur += <span class="variable constant_">CHUNK_SIZE</span>;</span><br><span class="line">      index++</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="language-xml"><span class="tag">&lt;<span class="name">div</span> <span class="attr">className</span>=<span class="string">'home-page'</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"file"</span> <span class="attr">id</span>=<span class="string">"fileInput"</span> <span class="attr">onChange</span>=<span class="string">{change}/</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">      <span class="tag">&lt;<span class="name">button</span> <span class="attr">id</span>=<span class="string">"uploadBtn"</span> <span class="attr">onClick</span>=<span class="string">{upload}</span>&gt;</span>上传<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="language-xml">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">};</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="title class_">Home</span>;</span><br><span class="line"></span><br></pre></td></tr></tbody></table></figure>
+<h4 id="二-控制并发："><a href="#二-控制并发：" class="headerlink" title="二.控制并发："></a>二.控制并发：</h4><p>Promise.race()方法返回一个promise，当接收的某个promise状态发生改变，无论成功或失败，Promise.race()会返回这个状态。使用Promise.race()来控制并发量。</p>
+<figure class="highlight javascript"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">upload</span> = (<span class="params"></span>) =&gt; {</span><br><span class="line">    <span class="comment">// 1.计算文件hash值</span></span><br><span class="line">    <span class="title function_">calculateFileHash</span>(file)</span><br><span class="line">    <span class="comment">// 2.将文件名、hash、文件大小调用接口</span></span><br><span class="line">    .<span class="title function_">then</span>(<span class="keyword">async</span> res =&gt; {</span><br><span class="line">      hash = res</span><br><span class="line">      <span class="keyword">const</span> params = {</span><br><span class="line">        <span class="attr">filename</span>: file.<span class="property">name</span>,</span><br><span class="line">        <span class="attr">hash</span>: res,</span><br><span class="line">        <span class="attr">length</span>: file.<span class="property">size</span>,</span><br><span class="line">      };</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">axios</span>({</span><br><span class="line">        <span class="attr">method</span>: <span class="string">'post'</span>,</span><br><span class="line">        <span class="attr">url</span>: <span class="string">'/chunk/info'</span>,</span><br><span class="line">        <span class="attr">data</span>: params</span><br><span class="line">      })</span><br><span class="line">    })</span><br><span class="line">    .<span class="title function_">then</span>(<span class="keyword">async</span> res =&gt; {</span><br><span class="line">      <span class="comment">// 3.将文件切片</span></span><br><span class="line">      <span class="title function_">fileChunk</span>(file)</span><br><span class="line">        </span><br><span class="line">      <span class="keyword">let</span> pond = [];  <span class="comment">//并发池</span></span><br><span class="line">      <span class="keyword">let</span> max = <span class="number">3</span>	<span class="comment">//最大并发量</span></span><br><span class="line">      <span class="comment">// 4.将切片后的文件遍历上传</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; fileChunkList.<span class="property">length</span>; i++) {</span><br><span class="line">        <span class="keyword">let</span> v = fileChunkList[i]</span><br><span class="line">        <span class="keyword">const</span> formData = <span class="keyword">new</span> <span class="title class_">FormData</span>();</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'chunkCount'</span>, fileChunkList.<span class="property">length</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'chunkIndex'</span>, v.<span class="property">chunkIndex</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'chunkSize'</span>, v.<span class="property">chunkSize</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'fileHash'</span>, hash);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'path'</span>, res.<span class="property">path</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'file'</span>, v.<span class="property">chunk</span>);</span><br><span class="line">        formData.<span class="title function_">append</span>(<span class="string">'everySize'</span>, <span class="variable constant_">CHUNK_SIZE</span>);</span><br><span class="line">        <span class="keyword">let</span> result =  <span class="title function_">axios</span>({</span><br><span class="line">          <span class="attr">method</span>: <span class="string">'post'</span>,</span><br><span class="line">          <span class="attr">url</span>: <span class="string">'/chunk/upload'</span>,</span><br><span class="line">          <span class="attr">data</span>: formData,</span><br><span class="line">          <span class="attr">headers</span>: {</span><br><span class="line">            <span class="string">'Content-Type'</span>: <span class="string">'multipart/form-data'</span></span><br><span class="line">          }</span><br><span class="line">        })</span><br><span class="line">        <span class="comment">// 5.将请求添加至并发池中</span></span><br><span class="line">        pond.<span class="title function_">push</span>(result)</span><br><span class="line">        result.<span class="title function_">then</span>( <span class="function"><span class="params">res</span> =&gt;</span> {</span><br><span class="line">          <span class="comment">// 6.当请求成功返回，将其从pond中删除</span></span><br><span class="line">          <span class="keyword">let</span> index = pond.<span class="title function_">findIndex</span>( <span class="function"><span class="params">i</span> =&gt;</span> i === result)</span><br><span class="line">          pond.<span class="title function_">splice</span>(index, <span class="number">1</span>)</span><br><span class="line">        })</span><br><span class="line">        <span class="comment">// 7.当并发值达到设定值</span></span><br><span class="line">        <span class="keyword">if</span>(pond.<span class="property">length</span> === max){</span><br><span class="line">          <span class="comment">//每当并发池跑完一个任务，就再塞入一个任务</span></span><br><span class="line">          <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">'满了满了'</span>);</span><br><span class="line">          <span class="keyword">await</span> <span class="title class_">Promise</span>.<span class="title function_">race</span>(pond)</span><br><span class="line">        }</span><br><span class="line">      }</span><br><span class="line">      <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">'已完成'</span>);</span><br><span class="line">    }) </span><br><span class="line">  };</span><br></pre></td></tr></tbody></table></figure>
+
+<h4 id="三-断点续传："><a href="#三-断点续传：" class="headerlink" title="三.断点续传："></a>三.断点续传：</h4><p>使用catch捕获失败的请求，在所有请求响应完毕后，将失败的请求重新进行处理。</p>
+<figure class="highlight javascript"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title function_">upload</span> = (<span class="params"></span>) =&gt; {</span><br><span class="line">    <span class="comment">// 1.计算文件hash值</span></span><br><span class="line">    <span class="title function_">calculateFileHash</span>(file)</span><br><span class="line">    <span class="comment">// 2.将文件名、hash、文件大小调用接口</span></span><br><span class="line">    .<span class="title function_">then</span>(<span class="keyword">async</span> res =&gt; {</span><br><span class="line">      hash = res</span><br><span class="line">      <span class="keyword">const</span> params = {</span><br><span class="line">        <span class="attr">filename</span>: file.<span class="property">name</span>,</span><br><span class="line">        <span class="attr">hash</span>: res,</span><br><span class="line">        <span class="attr">length</span>: file.<span class="property">size</span>,</span><br><span class="line">      };</span><br><span class="line">      <span class="keyword">return</span> <span class="title function_">axios</span>({</span><br><span class="line">        <span class="attr">method</span>: <span class="string">'post'</span>,</span><br><span class="line">        <span class="attr">url</span>: <span class="string">'/chunk/info'</span>,</span><br><span class="line">        <span class="attr">data</span>: params</span><br><span class="line">      })</span><br><span class="line">    })</span><br><span class="line">    .<span class="title function_">then</span>(<span class="keyword">async</span> res =&gt; {</span><br><span class="line">      <span class="comment">// 3.将文件切片</span></span><br><span class="line">      <span class="title function_">fileChunk</span>(file)</span><br><span class="line">        </span><br><span class="line">      <span class="keyword">let</span> pond = [];  <span class="comment">//并发池</span></span><br><span class="line">      <span class="keyword">let</span> max = <span class="number">3</span>	<span class="comment">//最大并发量</span></span><br><span class="line">      <span class="keyword">let</span> num = <span class="number">0</span>  <span class="comment">//成功上传的数量</span></span><br><span class="line">      <span class="keyword">let</span> failList = []   <span class="comment">//失败的列表</span></span><br><span class="line">      <span class="keyword">const</span> <span class="title function_">uploadChunkList</span> = <span class="keyword">async</span> (<span class="params">list</span>) =&gt; {</span><br><span class="line">        <span class="comment">// // 4.将切片后的文件遍历</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; list.<span class="property">length</span>; i++) {</span><br><span class="line">          <span class="keyword">let</span> v = list[i];</span><br><span class="line">          <span class="keyword">const</span> formData = <span class="keyword">new</span> <span class="title class_">FormData</span>();</span><br><span class="line">          formData.<span class="title function_">append</span>(<span class="string">'chunkCount'</span>, list.<span class="property">length</span>);</span><br><span class="line">          formData.<span class="title function_">append</span>(<span class="string">'chunkIndex'</span>, v.<span class="property">chunkIndex</span>);</span><br><span class="line">          formData.<span class="title function_">append</span>(<span class="string">'chunkSize'</span>, v.<span class="property">chunkSize</span>);</span><br><span class="line">          formData.<span class="title function_">append</span>(<span class="string">'fileHash'</span>, hash);</span><br><span class="line">          formData.<span class="title function_">append</span>(<span class="string">'path'</span>, res.<span class="property">path</span>);</span><br><span class="line">          formData.<span class="title function_">append</span>(<span class="string">'file'</span>, v.<span class="property">chunk</span>);</span><br><span class="line">          formData.<span class="title function_">append</span>(<span class="string">'everySize'</span>, <span class="variable constant_">CHUNK_SIZE</span>);</span><br><span class="line">          <span class="keyword">let</span> result =  <span class="title function_">axios</span>({</span><br><span class="line">            <span class="attr">method</span>: <span class="string">'post'</span>,</span><br><span class="line">            <span class="attr">url</span>: <span class="string">'/chunk/upload'</span>,</span><br><span class="line">            <span class="attr">data</span>: formData,</span><br><span class="line">            <span class="attr">headers</span>: {</span><br><span class="line">              <span class="string">'Content-Type'</span>: <span class="string">'multipart/form-data'</span></span><br><span class="line">            }</span><br><span class="line">          })</span><br><span class="line">          <span class="comment">// 5.将请求添加至并发池中</span></span><br><span class="line">          pond.<span class="title function_">push</span>(result);</span><br><span class="line">          result.<span class="title function_">then</span>(<span class="function">(<span class="params">res</span>) =&gt;</span> {</span><br><span class="line">            <span class="comment">// 6.当请求成功返回，将其从pond中删除</span></span><br><span class="line">            <span class="keyword">let</span> index = pond.<span class="title function_">findIndex</span>(<span class="function">(<span class="params">i</span>) =&gt;</span> i === result);</span><br><span class="line">            pond.<span class="title function_">splice</span>(index, <span class="number">1</span>);</span><br><span class="line">          }).<span class="title function_">catch</span>( <span class="function">() =&gt;</span> {</span><br><span class="line">            <span class="comment">// 7.如果请求失败，将此切片保存</span></span><br><span class="line">            failList.<span class="title function_">push</span>(v)</span><br><span class="line">          }).<span class="title function_">finally</span>(<span class="function">() =&gt;</span> {</span><br><span class="line">            num++</span><br><span class="line">            <span class="comment">// 8.当所有请求完成，将失败的列表再次进行处理</span></span><br><span class="line">            <span class="keyword">if</span>(num === list.<span class="property">length</span>) {<span class="title function_">uploadChunkList</span>(failList)}</span><br><span class="line">          })</span><br><span class="line">          <span class="comment">// 当并发值达到设定值</span></span><br><span class="line">          <span class="keyword">if</span> (pond.<span class="property">length</span> === max) {</span><br><span class="line">            <span class="comment">//每当并发池跑完一个任务，就再塞入一个任务</span></span><br><span class="line">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">'满了满了'</span>);</span><br><span class="line">            <span class="keyword">await</span> <span class="title class_">Promise</span>.<span class="title function_">race</span>(pond);</span><br><span class="line">          }</span><br><span class="line">        }</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">'已完成'</span>);</span><br><span class="line">        fileChunkList = [];</span><br><span class="line">      };</span><br><span class="line"></span><br><span class="line">      <span class="title function_">uploadChunkList</span>(fileChunkList)</span><br><span class="line">    }) </span><br><span class="line">  };</span><br></pre></td></tr></tbody></table></figure>
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://kaisailu-with-ice.gitee.io/blog/2022/11/08/%E5%88%86%E9%A1%B5%E4%B8%8A%E4%BC%A0/" title="分页上传" target="_blank" rel="external">https://kaisailu-with-ice.gitee.io/blog/2022/11/08/分页上传/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/buxiangxiedaim" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/blog/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/buxiangxiedaim" target="_blank"><span class="text-dark">开塞露加冰</span><small class="ml-1x">Web Developer &amp; Designer</small></a></h3>
+        <div>Web gap</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+           
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/blog/2022/11/11/readme/" title="(no title)"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/blog/2022/10/21/hello-world/" title="Hello World"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/blog/images/donate/alipayimg.png" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/blog/images/donate/wechatpayimg.png" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/buxiangxiedaim" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+        <li><a href="https://www.weibo.com/u/3204295635" target="_blank" title="Weibo" data-toggle=tooltip data-placement=top><i class="icon icon-weibo"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/blog/js/plugin.min.js"></script>
+
+
+<script src="/blog/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/blog/',
+        CONTENT_URL: '/blog/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/blog/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <!-- <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css"> -->
+  <script src="//cdn.jsdelivr.net/npm/gitalk@1.6.2/dist/gitalk.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/blueimp-md5@2.10.0/js/md5.min.js"></script>
+  <script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: '',
+    clientSecret: '',
+    repo: 'https://github.com/buxiangxiedaim/blgtalk',
+    owner: 'buxiangxiedaim',
+    admin: ['buxiangxiedaim'],
+    id: md5(location.pathname),
+    distractionFreeMode: true,
+    language: 'zh-CN',
+    enableHotKey: 'true',
+    proxy: 'https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token',
+  })
+  gitalk.render('comments')
+  </script>
+      
+
+
+
+
+
+
+
+</body>
+</html>
